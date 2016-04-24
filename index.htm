@@ -1,0 +1,238 @@
+<html lang="ja">
+<head>
+<title>Space_Apps_Challenge</title>
+<link rel="stylesheet" type="text/css" href="./css/default.css">
+<style media="screen">
+  .canvas {
+    width : 600px;
+    height: 600px;
+    position: relative;
+    background-color: #000;
+  }
+  .sun {
+    width: 90px;
+    height: 90px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    background-image: url('img/space01_sun.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  .earth {
+    width: 40px;
+    height: 40px;
+    right: 10px;
+    top : 0;
+    bottom: 0;
+    margin: auto;
+    position: absolute;
+    background-image: url('img/space04_earth.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  .rocket {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    right : 10px;
+    top : 280px;
+    background-image: url('img/space_rocket.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  .mercury {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    left: 220px;
+    top : 0;
+    bottom: 0;
+    margin: auto;
+    background-image: url('img/space02_mercury.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+
+  }
+  .venus {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    left: 145px;
+    top : 0;
+    bottom: 0;
+    margin: auto;
+    background-image: url('img/space03_venus.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  #canvas0 {
+    position: relative;
+    width: 720px;
+    height: 100px;
+    z-index: 10;
+  }
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript" src="js/meter.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript">
+  var appState = 0;
+  $(function() {
+    g_canvas=document.getElementById("canvas0");
+    g_ctx=g_canvas.getContext("2d");
+    meter=new meter_class(g_ctx);
+    $('#main_left').click(function(){
+      if (appState === 0) {
+    		meter.start();
+        appState = 1;
+
+      } else if(appState === 1) {
+        $('.tori').attr('src', 'img/steam_oven.png');
+        $('#chicken_status').text('Roasting!')
+        var v0 = (meter.get_pow() / 250.0) * 0.067 * 1.1;
+        var r0 = 250;
+        var G = 1
+        var m0 = 1;
+
+        var L = r0 * v0;
+        var l = Math.pow(L, 2) / (G * m0);
+        var epsilon = 1 - (l / r0);
+
+        var r = r0;
+        var phi = Math.PI;
+        var deltaPhi = Math.PI / 180.0 * 0.5;
+        var T = 0;
+        var deltaT = 0;
+        var updateDeltaT = r0 / v0 * deltaPhi;
+        var updateT = 0;
+        var i = 0;
+
+        var canvasWidth = $('.canvas').width();
+        var canvasHeight = $('.canvas').height();
+        var sunWidth = $('.sun').width();
+        var sunHeight = $('.sun').height();
+        var minX= 600;
+
+        var interval = setInterval(function() {
+          updateT = updateT + updateDeltaT;
+          while(T <= updateT){
+            deltaT = deltaPhi * (r * r) / L;
+            phi = phi + deltaPhi;
+            r = l / (1 + epsilon * Math.cos(phi));
+            T = T + deltaT;
+          }
+          var x = Math.round((-r * Math.cos(phi) + 300));
+          var y = Math.round((r * Math.sin(phi) + 300));
+          $('.rocket').css('top', y);
+          $('.rocket').css('left', x);
+
+          if (x < minX) {
+            minX = x;
+          }
+
+          if (phi >= (Math.PI * 3)) {
+            // 一周した
+            clearInterval(interval);
+            console.log('minx : ' + minX);
+            console.log('abc : ' + $('.venus').position().left);
+            if (minX >= $('.mercury').position().left) {
+              console.log('焦げ');
+              $('.tori').attr('src', 'img/cake_kogeru.png');
+              $('#chicken_status').text('Bad! Burnt');
+            } else if (minX <= $('.venus').position().left) {
+              console.log('レア');
+              $('.tori').attr('src', 'img/niku_tori.png');
+              $('#chicken_status').text('Bad! Rare');
+
+            } else {
+              console.log('good');
+              $('.tori').attr('src', 'img/chicken_honetsuki.png');
+              $('#chicken_status').text('Good! Delicious');
+            }
+            appState = 4;
+          } else if (x < 0 || y < 0 || x > 600 || y > 600) {
+            // 領域外に移動
+            clearInterval(interval);
+            appState = 4;
+
+          } else if (x >= (canvasWidth / 2) - (sunWidth / 2)
+            && x < (canvasWidth / 2) + (sunWidth / 2)
+            && y >= (canvasHeight / 2) - (sunHeight / 2)
+            && y < (canvasHeight / 2) + (sunHeight / 2)) {
+              // 太陽に衝突
+              clearInterval(interval);
+              $('.rocket').css('background-image', "url('img/ao.png')");
+              // $('.rocket').animate({
+              //   width : "60px",
+              //   height: "60px"
+              // });
+              $('.tori').attr('src', 'img/cake_kogeru.png');
+              $('#chicken_status').text('Ready?');
+
+              appState = 4;
+            }
+        }, 10);
+        appState = 2;
+      } else if (appState == 4){
+        appState = 0;
+        g_canvas=document.getElementById("canvas0");
+        g_ctx=g_canvas.getContext("2d");
+        meter=new meter_class(g_ctx);
+        $('.rocket').css('background-image', "url('img/space_rocket.png')");
+        $('.rocket').css('width', "40px");
+        $('.rocket').css('height', "40px");
+        $('.rocket').css('top', '260px');
+        $('.rocket').css('left', '560px');
+        $('.tori').attr('src', 'img/eto_remake_tori.png');
+      }
+    });
+  });
+</script>
+</head>
+
+<body>
+<div id="container">
+
+<div id="header">
+  <h1>Chiken Rocket</h1>
+</div>
+
+<div id="Navigation">
+  <ul id="nav">
+      <li id="active"><a href="#">HOME</a></li>
+      <li id="active"><a href="#">RANKING</a></li>
+      <li id="active"><a href="#">1</a></li>
+      <li id="active"><a href="#">2</a></li>
+      <li id="active"><a href="#">3</a></li>
+    </ul>
+</div>
+
+<div id="main_left">
+  <div class="canvas">
+    <div class="sun"></div>
+    <div class="mercury"></div>
+    <div class="venus"></div>
+    <div class="earth"></div>
+    <div class="rocket"></div>
+  </div>
+  <canvas id="canvas0"></canvas>
+</div>
+
+<div id="main_right">
+  <div class="chicken">Chicken Rocket!!</div>
+  <img src="./img/tori.png" class="tori">
+  <div id="chicken_status" class="chicken">Ready?</div>
+  <div class="speed">Speed:<span class="speed_text">0</span>%</div>
+</div>
+
+<div id="footer">
+  @2016
+</div>
+</div>
+</body>
+</html>
