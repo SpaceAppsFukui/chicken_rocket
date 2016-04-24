@@ -76,6 +76,52 @@
     height: 100px;
     z-index: 10;
   }
+  .img_div {
+    position: relative;
+    text-align: center;
+
+  }
+  .click_text {
+    color: #FFF;
+    font-size: 40px;
+  }
+
+  .button {
+  	display: inline-block;
+  	width: 200px;
+  	height: 54px;
+  	text-align: center;
+  	text-decoration: none;
+  	line-height: 54px;
+  	outline: none;
+    background-color: #333;
+    color: #fff;
+    font-size: 30px;
+    border-style: none;
+    margin-top: 30px;
+  }
+  .button::before,
+  .button::after {
+  	position: absolute;
+  	z-index: -1;
+  	display: block;
+  	content: '';
+  }
+  .button,
+  .button::before,
+  .button::after {
+  	-webkit-box-sizing: border-box;
+  	-moz-box-sizing: border-box;
+  	box-sizing: border-box;
+  	-webkit-transition: all .3s;
+  	transition: all .3s;
+  }
+  .button:hover {
+  	background-color: #59b1eb;
+  }
+  .main_right_inner {
+    margin-top: 100px;
+  }
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script type="text/javascript" src="js/meter.js"></script>
@@ -86,15 +132,16 @@
     g_canvas=document.getElementById("canvas0");
     g_ctx=g_canvas.getContext("2d");
     meter=new meter_class(g_ctx);
-    $('#main_left').click(function(){
+    meter.draw();
+    $('#start_button').click(function(){
       if (appState === 0) {
     		meter.start();
         appState = 1;
-
+        $('#start_button').text('Launch!');
       } else if(appState === 1) {
         $('.tori').attr('src', 'img/steam_oven.png');
         $('#chicken_status').text('Roasting!')
-        var v0 = (meter.get_pow() / 250.0) * 0.067 * 1.1;
+        var v0 = meter.get_pow() * 0.067 * 1.1;
         var r0 = 250;
         var G = 1
         var m0 = 1;
@@ -154,10 +201,12 @@
               $('.tori').attr('src', 'img/chicken_honetsuki.png');
               $('#chicken_status').text('Good! Delicious');
             }
+            $('#start_button').text('Reset!');
             appState = 4;
           } else if (x < 0 || y < 0 || x > 600 || y > 600) {
             // 領域外に移動
             clearInterval(interval);
+            $('#start_button').text('Reset!');
             appState = 4;
 
           } else if (x >= (canvasWidth / 2) - (sunWidth / 2)
@@ -173,6 +222,7 @@
               // });
               $('.tori').attr('src', 'img/cake_kogeru.png');
               $('#chicken_status').text('Ready?');
+              $('#start_button').text('Reset!');
 
               appState = 4;
             }
@@ -189,6 +239,8 @@
         $('.rocket').css('top', '260px');
         $('.rocket').css('left', '560px');
         $('.tori').attr('src', 'img/eto_remake_tori.png');
+        $('#start_button').text('Start!');
+        meter.end();
       }
     });
   });
@@ -224,10 +276,17 @@
 </div>
 
 <div id="main_right">
-  <div class="chicken">Chicken Rocket!!</div>
-  <img src="./img/tori.png" class="tori">
-  <div id="chicken_status" class="chicken">Ready?</div>
-  <div class="speed">Speed:<span class="speed_text">0</span>%</div>
+  <div class="main_right_inner">
+    <div class="chicken">Chicken Rocket!!</div>
+    <div class="img_div">
+      <img src="./img/tori.png" class="tori">
+    </div>
+    <div id="chicken_status" class="chicken">Ready?</div>
+    <!--<div class="speed">Speed:<span class="speed_text">0</span>%</div>-->
+
+    <button id="start_button" class="button" href="#">Start!</button>
+  </div>
+
 </div>
 
 <div id="footer">
